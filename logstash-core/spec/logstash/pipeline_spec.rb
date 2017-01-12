@@ -206,7 +206,7 @@ describe LogStash::Pipeline do
           msg = "Defaulting pipeline worker threads to 1 because there are some filters that might not work with multiple worker threads"
           pipeline = TestPipeline.new(test_config_with_filters)
           expect(pipeline.logger).to receive(:warn).with(msg,
-            {:count_was=>worker_thread_count, :filters=>["dummyfilter"]})
+            {:count_was=>worker_thread_count, :filters=>["dummyfilter"], :pipeline_id => "main"})
           pipeline.run
           expect(pipeline.worker_threads.size).to eq(safe_thread_count)
           pipeline.shutdown
@@ -220,7 +220,7 @@ describe LogStash::Pipeline do
                 " not work with multiple worker threads"
           pipeline = TestPipeline.new(test_config_with_filters, pipeline_settings_obj)
           expect(pipeline.logger).to receive(:warn).with(msg,
-            {:worker_threads=> override_thread_count, :filters=>["dummyfilter"]})
+            {:worker_threads=> override_thread_count, :filters=>["dummyfilter"], :pipeline_id => "main"})
           pipeline.run
           expect(pipeline.worker_threads.size).to eq(override_thread_count)
           pipeline.shutdown
@@ -391,14 +391,14 @@ describe LogStash::Pipeline do
     end
 
     it "should not raise a max inflight warning if the max_inflight count isn't exceeded" do
-      expect(logger).not_to have_received(:warn).with(warning_prefix)
+      expect(logger).not_to have_received(:warn).with(warning_prefix, hash_including(:pipeline_id => be_kind_of(String)))
     end
 
     context "with a too large inflight count" do
       let(:batch_size) { LogStash::Pipeline::MAX_INFLIGHT_WARN_THRESHOLD + 1 }
 
       it "should raise a max inflight warning if the max_inflight count is exceeded" do
-        expect(logger).to have_received(:warn).with(warning_prefix)
+        expect(logger).to have_received(:warn).with(warning_prefix, hash_including(:pipeline_id => be_kind_of(String)))
       end
     end
   end
