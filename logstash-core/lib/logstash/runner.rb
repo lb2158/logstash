@@ -279,7 +279,7 @@ class LogStash::Runner < Clamp::StrictCommand
     @agent = create_agent(@settings)
 
     pipelines.each do |settings|
-      @agent.register_pipeline(settings.get("pipeline.id"), settings)
+      register_pipeline(settings.get("pipeline.id"), settings)
     end
 
     # enable sigint/sigterm before starting the agent
@@ -444,6 +444,10 @@ class LogStash::Runner < Clamp::StrictCommand
   def cli_help?(args)
     # I know, double negative
     !(["--help", "-h"] & args).empty?
+  end
+
+  def register_pipeline(pipeline_id, settings)
+    @agent.register_pipeline(pipeline_id, settings)
   end
 
 end

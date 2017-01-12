@@ -389,6 +389,23 @@ describe LogStash::Runner do
           expect(subject.run(args)).to eq(1)
         end
       end
+
+      context "and pipelines are defined in the pipelines setting" do
+        let(:pipeline_one) do
+          {"pipeline.id" => "p1", "config.string" => "input {} output {}" }
+        end
+        let(:pipeline_two) do
+          {"pipeline.id" => "p2", "config.string" => "input {} output {}" }
+        end
+        before :each do
+          LogStash::SETTINGS.set("pipelines", [pipeline_one, pipeline_two])
+        end
+
+        it "registers two pipelines in the agent" do
+          expect(subject).to receive(:register_pipeline).twice
+          subject.run([])
+        end
+      end
     end
   end
 end
